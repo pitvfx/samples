@@ -37,7 +37,6 @@ Unpack both paintParticles.py and PaintParticles.gizmo into the .nuke folder and
 
 **usage**
 First, set the format, lifetime and intial size for your particles.
-
 ![image](src/img/pp01.png)
 
 
