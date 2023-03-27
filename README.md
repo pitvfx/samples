@@ -46,8 +46,7 @@ Add points by holding down alt and right clicking into the viewer, the current f
 You can also select and delete points by changing the selection mode to either select or delete in the viewer toolbar and then alt click on the point. 
 
 Alternative you can create points by randomly creating distributing them.
-Open the random group and change the distribution box to the size you want your particles be distributed in. Choose the distribution mode, rectangle, in circle and on circle.
-Change the rest of the random attributes and hit the distribute button.
+Open the random group and change the distribution box to the size you want your particles be distributed in. Choose the distribution mode, rectangle, in circle and on circle.Change the rest of the random attributes and hit the distribute button.
 ![image](https://github.com/pitvfx/samples/blob/d36881f35811016ee4ea21e64f993fac8a1c5699/src/img/pp04.PNG)
 
 
