@@ -33,9 +33,12 @@ Let's the user "paint" Particles in the viewer.
 Unpack both paintParticles.py and PaintParticles.gizmo into the .nuke folder and insert the following lines into the menu.py
         
         import paintParticles
-        nuke.load("PaintParticles")
+        nuke.menu("Nodes").addCommand("PaintParticles/PaintParticles", nuke.nodes.PaintParticles)
 
 **usage**
-Select the "Add" mode in the viewer toolbar. Add a point by clicking into the viewer while holding down the alt key.
-In the point selection, select a point and change its values.
+First, set the format, lifetime and intial size for your particles.
+
+![image](img/pp01.png)
+
+
 

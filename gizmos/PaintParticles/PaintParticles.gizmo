@@ -38,6 +38,7 @@ Gizmo {
  addUserKnob {78 frameRand l frame n 2}
  frameRand {1 10}
  addUserKnob {78 spriteRand l sprite n 2}
+ spriteRand {0 1}
  addUserKnob {78 sizeRand l size n 2}
  sizeRand {10 50}
  addUserKnob {78 rotRand l rotate n 2}
