@@ -98,3 +98,22 @@ Alternatively, uncheck the "use sample color" knob and pick a color from the Yxy
 Change the attributes to match the key the you want.
 
 ![alt](src/img/cp03.PNG)
+
+## TCL
+
+### exportScript
+
+**description**
+A tcl script that outsmarts Nukes Non-Commercial, only export binary files.
+
+**installation**
+Add the exportScript.tcl file into your.nuke folder and add the following line into your menu.py
+
+                nuke.menu("Nuke").addCommand("exportScript/exportScript", "nuke.tcl('load exportScript; exportScript')")
+
+**usage**
+Run the script with a nuke script open. A small panel asks you to choose a file to save to. Hit OK. And done
+
+**notice:** This is not for procduction scenarios, but for hobby blogger, wantig to share some script love.
+
+![image](src/img/e01.PNG)
