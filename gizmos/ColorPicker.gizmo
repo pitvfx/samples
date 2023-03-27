@@ -1,0 +1,325 @@
+Gizmo {
+ knobChanged "n = nuke.thisNode()\nk = nuke.thisKnob()\nd = \{'radial': \['size', 'feather'], 'cubic': \['size_wh', 'feather_wh', 'rotation']\}\n\nif k.name() == 'shape':\n    for key, values in d.items():\n        if k.value() == key:\n            \[n\[v].setVisible(True) for v in values]\n        else:\n            \[n\[v].setVisible(False) for v in values]\t"
+ addUserKnob {20 ColorPicker}
+ addUserKnob {41 in l channel T Shuffle1.in}
+ addUserKnob {18 sample_rgb}
+ sample_rgb {0 0 0}
+ addUserKnob {6 sample_rgb_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+ addUserKnob {6 useSampleColor l "use sample color" -STARTLINE}
+ useSampleColor true
+ addUserKnob {12 sample l "sample point"}
+ sample {185 200}
+ addUserKnob {6 showDiagram l "show diagram" -STARTLINE}
+ showDiagram true
+ addUserKnob {6 maskOverlay l "mask overlay" +STARTLINE}
+ addUserKnob {26 ""}
+ addUserKnob {4 shape M {radial cubic}}
+ addUserKnob {7 size}
+ size 1
+ addUserKnob {14 size_wh +HIDDEN R 0 100}
+ size_wh {1 1}
+ addUserKnob {7 feather}
+ feather 1
+ addUserKnob {14 feather_wh +HIDDEN R 0 100}
+ feather_wh {1 1}
+ addUserKnob {7 soften}
+ soften 1
+ addUserKnob {7 rotation +HIDDEN R -180 180}
+ addUserKnob {20 Luminace_Grp l Luminace n 1}
+ Luminace_Grp 0
+ addUserKnob {26 text l Luminace T "\t\t\t\t"}
+ addUserKnob {6 useLuminace -STARTLINE}
+ addUserKnob {4 combine l "" -STARTLINE M {subtract add "" "" ""}}
+ addUserKnob {41 invert -STARTLINE T luminaceKeyer.invert}
+ addUserKnob {41 range T luminaceKeyer.range}
+ addUserKnob {20 endGroup_1 l endGroup n -1}
+}
+ Constant {
+  inputs 0
+  channels rgb
+  format "512 512 0 0 512 512 1 square_512"
+  name Constant1
+  xpos -581
+  ypos -417
+ }
+set N724aac00 [stack 0]
+ Expression {
+  expr0 1
+  expr1 "x / (width-1)"
+  expr2 "y / (height-1)"
+  name Yxy
+  xpos -581
+  ypos -280
+ }
+set N724aa800 [stack 0]
+ Colorspace {
+  colorspace_in CIE-Yxy
+  name Yxy_to_RGB
+  xpos -581
+  ypos -147
+ }
+ Expression {
+  expr3 "r < 0 || g < 0 || b < 0 ? 0 : 1"
+  name RGB_Alpha
+  xpos -581
+  ypos -82
+ }
+set Neb889c00 [stack 0]
+push $N724aac00
+ Grade {
+  add {{"parent.useSampleColor ? parent.sample_rgb : 0"} {"parent.useSampleColor ? parent.sample_rgb : parent.sample.x / Constant1.width"} {"parent.useSampleColor ? parent.sample_rgb : parent.sample.y / Constant1.height"} 0}
+  black_clamp false
+  name centerSample
+  xpos -429
+  ypos -393
+ }
+ set Ceb889400 [stack 0]
+ Colorspace {
+  colorspace_out CIE-Yxy
+  name sampleRGB_to_Yxy
+  xpos -429
+  ypos -350
+  disable {{!parent.useSampleColor}}
+ }
+ set Ceb889000 [stack 0]
+push $N724aa800
+ Merge2 {
+  inputs 2
+  operation from
+  name Merge2
+  xpos -429
+  ypos -280
+ }
+set Neb888c00 [stack 0]
+ Expression {
+  temp_name0 rot
+  temp_expr0 radians(parent.rotation)
+  temp_name2 X
+  temp_expr2 "g * cos(rot) - b *sin(rot)"
+  temp_name3 Y
+  temp_expr3 "g * sin(rot) + b * cos(rot)"
+  expr1 X
+  expr2 Y
+  unpremult -rgba.alpha
+  name rotation
+  note_font Helvetica
+  xpos -316
+  ypos -215
+  addUserKnob {20 User}
+ }
+ set Ceb888800 [stack 0]
+ Expression {
+  temp_name0 si
+  temp_expr0 parent.size_wh.w/10
+  temp_name1 fe
+  temp_expr1 "max(si+.000001, si+parent.feather_wh.w/10)"
+  temp_name2 so
+  temp_expr2 "max(0.0000001, parent.soften)"
+  expr3 "smoothstep(si, fe, g) + smoothstep(-si, -fe, g)"
+  name cubicX
+  xpos -316
+  ypos -180
+  addUserKnob {20 User}
+ }
+ set Ceb888000 [stack 0]
+ Expression {
+  temp_name0 si
+  temp_expr0 parent.size_wh.h/10
+  temp_name1 fe
+  temp_expr1 "max(si+.000001, si+parent.feather_wh.h/10)"
+  temp_name2 so
+  temp_expr2 "max(0.0000001, parent.soften)"
+  expr3 "pow(min(1- a , 1-(smoothstep(si, fe, b) + smoothstep(-si, -fe, b))), so)"
+  name cubicY
+  xpos -316
+  ypos -156
+  addUserKnob {20 User}
+ }
+ set Cb9637800 [stack 0]
+push $Neb888c00
+ Expression {
+  temp_name0 si
+  temp_expr0 parent.size/10
+  temp_name1 fe
+  temp_expr1 "max(si, si+parent.feather/10)"
+  temp_name2 so
+  temp_expr2 "max(0.0000001, parent.soften)"
+  expr3 "clamp(pow(1-smoothstep(si, fe, hypot(g,b)), so))"
+  name radial
+  xpos -430
+  ypos -159
+  addUserKnob {20 User}
+ }
+ set Cb9637000 [stack 0]
+ Switch {
+  inputs 2
+  which {{parent.shape}}
+  name shape
+  xpos -316
+  ypos -118
+ }
+ set Cd7497180 [stack 0]
+push $Neb889c00
+ ChannelMerge {
+  inputs 2
+  operation multiply
+  name ChannelMerge1
+  xpos -468
+  ypos -94
+ }
+ Premult {
+  name Premult1
+  xpos -318
+  ypos -82
+ }
+ Copy {
+  inputs 2
+  from0 rgba.alpha
+  to0 rgba.alpha
+  name Copy1
+  xpos -318
+  ypos -24
+ }
+ Input {
+  inputs 0
+  name Input1
+  xpos 152
+  ypos -684
+ }
+ Dot {
+  name Dot2
+  xpos 186
+  ypos -584
+ }
+set N75343800 [stack 0]
+ Shuffle {
+  name Shuffle1
+  label "<b>\[value in]"
+  xpos 39
+  ypos -598
+ }
+ Remove {
+  operation keep
+  channels rgba
+  name Remove1
+  xpos -125
+  ypos -588
+ }
+set N75343000 [stack 0]
+ Shuffle {
+  red black
+  green black
+  blue black
+  alpha black
+  name black1
+  xpos -346
+  ypos -588
+ }
+clone $Ceb889400 {
+  xpos -346
+  ypos -529
+  selected false
+ }
+clone $Ceb889000 {
+  xpos -236
+  ypos -529
+  selected false
+ }
+push $N75343000
+ Colorspace {
+  colorspace_out CIE-Yxy
+  name RGB_to_Yxy
+  xpos -125
+  ypos -564
+ }
+ Merge2 {
+  inputs 2
+  operation from
+  name Merge3
+  xpos -125
+  ypos -509
+ }
+set N83f51c00 [stack 0]
+clone $Ceb888800 {
+  xpos -125
+  ypos -465
+  selected false
+ }
+clone $Ceb888000 {
+  xpos -125
+  ypos -439
+  selected false
+ }
+clone $Cb9637800 {
+  xpos -125
+  ypos -415
+  selected false
+ }
+push $N83f51c00
+ Dot {
+  name Dot1
+  xpos -205
+  ypos -506
+ }
+clone $Cb9637000 {
+  xpos -239
+  ypos -377
+  selected false
+ }
+clone $Cd7497180 {
+  inputs 2
+  xpos -125
+  ypos -377
+  selected false
+ }
+ Transform {
+  center {{width/2} {height/2}}
+  filter Notch
+  name Transform4
+  xpos -125
+  ypos -268
+ }
+push $N75343800
+ Copy {
+  inputs 2
+  from0 rgba.alpha
+  to0 rgba.alpha
+  name Copy2
+  xpos 152
+  ypos -273
+ }
+ Keyer {
+  combine {{parent.combine+1}}
+  invert true
+  operation "luminance key"
+  range {0 0.8 1 1}
+  name luminaceKeyer
+  xpos 152
+  ypos -217
+  disable {{!useLuminace}}
+ }
+set N74622c00 [stack 0]
+push $N74622c00
+ Grade {
+  inputs 1+1
+  add 1
+  name maskOverlay
+  xpos 152
+  ypos -115
+  disable {{!parent.maskOverlay}}
+ }
+ Merge2 {
+  inputs 2
+  output rgb
+  name Merge1
+  selected true
+  xpos 152
+  ypos -17
+  disable {{!parent.showDiagram}}
+ }
+ Output {
+  name Output1
+  xpos 152
+  ypos 76
+ }
+end_group
