@@ -187,7 +187,7 @@ class PaintParticles(object):
         self.qtWidget.removeItem(point)
     
     def reset(self, amount=True):
-        for knobname, knob in self.pKnobs.iteritems():
+        for knobname, knob in self.pKnobs.items():
             if knobname == "pos":
                 knob.fromScript("curve curve")
             else:
@@ -201,12 +201,12 @@ class PaintParticles(object):
     def sortByFrame(self):
         sortedValues = []
         for i in range(self.amount):
-            sortedValues.append(dict([(knobname, knob.getValueAt(i)) for knobname, knob in self.pKnobs.iteritems()]))
+            sortedValues.append(dict([(knobname, knob.getValueAt(i)) for knobname, knob in self.pKnobs.items()]))
         self.reset(False)
         
         sortedValues.sort(key=lambda x: x['frame'])
         for i, sortedValue in enumerate(sortedValues):
-            for k, v in sortedValue.iteritems():
+            for k, v in sortedValue.items():
                 self.changeValues(v, k, i)
                 
     def skipPointForw(self):
