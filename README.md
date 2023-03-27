@@ -54,3 +54,21 @@ Open the random group and change the distribution box to the size you want your 
 You can change all attributes of a particle, by first selecting one, either in the viewer (see above), or from the selection panel.
 
 ![image](https://github.com/pitvfx/samples/blob/d36881f35811016ee4ea21e64f993fac8a1c5699/src/img/pp03.PNG)
+
+
+### ColorPicker
+
+**description**
+Key color in Yxy colorspace.
+
+**installation**
+Add ColorPicker.gizmo to the .nuke folder and the following line into the menu.py
+        
+        nuke.menu("Nodes").addCommand("ColorPicker/ColorPicker", nuke.nodes.ColorPicker)
+
+
+**usage**
+Pick a color with the color picker and the "use sample color" knob checked.
+
+![alt](src/img/cp01.PNG)
+
