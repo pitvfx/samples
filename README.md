@@ -40,7 +40,7 @@ First, set the format, lifetime and intial size for your particles.
 ![image](src/img/pp01.png)
 
 Now, select the Add mode and the picker form the viewer toolbar.
-![image](src/img/pp02.png)
+![image](https://github.com/pitvfx/samples/blob/d36881f35811016ee4ea21e64f993fac8a1c5699/src/img/pp02.PNG)
 
 Add points by holding down alt and right clicking into the viewer, the current frame will be start frame.
 You can also select and delete points by changing the selection mode to either select or delete in the viewer toolbar and then alt click on the point. 
@@ -48,8 +48,8 @@ You can also select and delete points by changing the selection mode to either s
 Alternative you can create points by randomly creating distributing them.
 Open the random group and change the distribution box to the size you want your particles be distributed in. Choose the distribution mode, rectangle, in circle and on circle.
 Change the rest of the random attributes and hit the distribute button.
-![image](src/img/pp04.png)
+![image](https://github.com/pitvfx/samples/blob/d36881f35811016ee4ea21e64f993fac8a1c5699/src/img/pp04.PNG)
 
 
 You can change all attributes of a particle, by first selecting one, either in the viewer (see above), or from the selection panel.
-![image](src/img/pp03.png)
+![image](https://github.com/pitvfx/samples/blob/d36881f35811016ee4ea21e64f993fac8a1c5699/src/img/pp03.PNG)
