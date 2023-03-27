@@ -2,6 +2,25 @@
 
 ## python
 
+### callbackKnobs
+
+**description**
+A helper panel to quickly add commands to the knobChanged or onCreate knob of a node.
+
+**installation**
+Add th callbaclKnobs.py to your .nuke folder and add the following lines to your menu.py:
+
+                nukeMenu=nuke.menu("Nuke")
+                nukeMenu.addCommand("callbackKnobs/knobChanged", "callbackKnobs.callbackKnobsByUI('knobChanged')")
+                nukeMenu.addCommand("callbackKnobs/onCreate", "callbackKnobs.callbackKnobsByUI('onCreate')")
+
+**usage**
+Select the node you want. Select wich callback knob you want to access, knobChanged or onCreate, and select the callbackKnobs function acordingly.
+A panel pops up. Now add the python code into the values knob. The default button sets up a default function setting thisNode and thisKnob varriables. The reset button resets the values knobs. The sub nodes pulldown choice lets you select nodes from inside your current selected node.
+
+![image](src/img/ck01.PNG)
+
+
 ### my3d.py
 
 **description**
