@@ -27,11 +27,6 @@ Change the position of the points and the handles.
 
 Change all other attributes to liking.
 
-=======
-**Nuke:** 13
-
-**python:** 3 
->>>>>>> 05ca4020f495b500825a550d79da8c0fdd9006cf
 
 ## python
 
