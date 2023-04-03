@@ -31,7 +31,7 @@ Change the position of the points and the handles.
 
 ![image](src/img/sp03.PNG)
 
-Change all other attributes to liking.
+Change all other attributes as you wish.
 
 
 ## python
