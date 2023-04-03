@@ -1,0 +1,195 @@
+Group {
+ inputs 0
+ name SimpleParticles1
+ knobChanged "\nnode = nuke.thisNode()\nknob = nuke.thisKnob()\n\nif knob.name() == \"mode\":\n    node\[\"pointSize\"].setVisible(not knob.getValue())"
+ selected true
+ xpos -40
+ ypos -311
+ addUserKnob {20 User}
+ addUserKnob {41 format T Format.format}
+ addUserKnob {22 getSpline l "get spline" T nuke.thisNode().node('Roto1').showControlPanel() +STARTLINE}
+ addUserKnob {26 "" +STARTLINE}
+ addUserKnob {3 start_frame l "frame range"}
+ start_frame {1}
+ addUserKnob {3 end_frame l "" -STARTLINE}
+ end_frame {100}
+ addUserKnob {3 amount}
+ amount {50}
+ addUserKnob {3 liftetime -STARTLINE}
+ liftetime {50}
+ addUserKnob {26 "" +STARTLINE}
+ addUserKnob {6 color_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+ addUserKnob {4 mode M {circles points}}
+ mode points
+ addUserKnob {4 mergeMode l "" -STARTLINE M {add max}}
+ addUserKnob {19 color}
+ color {1}
+ addUserKnob {7 pointSize l "circle size" +HIDDEN}
+ pointSize {4}
+ addUserKnob {26 "" +STARTLINE}
+ addUserKnob {7 velocity R 0 10}
+ velocity {0.5}
+ addUserKnob {7 random_velocity l random -STARTLINE}
+ random_velocity {1}
+ addUserKnob {20 noise_grp l noise n 1}
+ addUserKnob {41 value l multiply T Multiply1.value}
+ addUserKnob {41 size l x/ysize T Noise1.size}
+ addUserKnob {41 octaves T Noise1.octaves}
+ addUserKnob {41 lacunarity T Noise1.lacunarity}
+ addUserKnob {41 gain T Noise1.gain}
+ addUserKnob {20 endGroup n -1}
+}
+ Constant {
+  inputs 0
+  channels rgb
+  format "1920 1080 0 0 1920 1080 1 HD_1080"
+  name Format
+  xpos -249
+  ypos -465
+ }
+set N26f25400 [stack 0]
+ Noise {
+  output {rgba.red -rgba.green -rgba.blue rgba.alpha}
+  size {130}
+  lacunarity 2.2
+  gamma 1
+  center {1920 1080}
+  name Noise1
+  xpos -112
+  ypos -447
+ }
+ Noise {
+  output {-rgba.red rgba.green -rgba.blue rgba.alpha}
+  size {{parent.Noise1.size}}
+  zoffset 1000
+  octaves {{parent.Noise1.octaves}}
+  lacunarity {{parent.Noise1.lacunarity}}
+  gain {{parent.Noise1.gain}}
+  gamma 1
+  center {1920 1080}
+  name Noise2
+  xpos -112
+  ypos -411
+ }
+ Grade {
+  channels {rgba.red rgba.green -rgba.blue none}
+  multiply 2
+  add -1
+  black_clamp false
+  name Grade1
+  xpos -112
+  ypos -375
+ }
+ Multiply {
+  channels rgb
+  value 200
+  name Multiply1
+  xpos -112
+  ypos -339
+ }
+push $N26f25400
+ BlinkScript {
+  inputs 2
+  kernelSourceFile C:/Users/peter.stache/.nuke/BlinkScripts/SimpleParticles.cpp
+  recompileCount 139
+  KernelDescription "2 \"SimpleParticles\" iterate pixelWise 9d004663b933f39d11da9d586aa166152dd32a16386f2fbd80e60b3eade9a1cb 3 \"format\" Read Point \"noise\" Read Random \"dst\" Write Random 15 \"point1\" Float 2 AAAgQQAAIEE= \"point1 handle\" Float 2 AACgQQAAIEE= \"point2 handle\" Float 2 AADwQQAAIEE= \"point2\" Float 2 AAAgQgAAIEE= \"start frame\" Int 1 AAAAAA== \"end frame\" Int 1 ZAAAAA== \"current frame\" Int 1 AAAAAA== \"amount per frame\" Int 1 FAAAAA== \"lifetime\" Int 1 CgAAAA== \"velocity\" Float 1 AACAPw== \"random velocity\" Float 1 AACAPw== \"color\" Float 4 AACAPwAAgD8AAIA/AACAPw== \"mode\" Bool 1 AA== \"Point Size\" Float 1 AADAPw== \"max\" Bool 1 AA== 15 \"p1\" 2 1 \"p1h\" 2 1 \"p2h\" 2 1 \"p2\" 2 1 \"start_frame\" 1 1 \"end_frame\" 1 1 \"curr_frame\" 1 1 \"amount\" 1 1 \"lifetime\" 1 1 \"velocity\" 1 1 \"random_velocity\" 1 1 \"color\" 4 1 \"_mode\" 1 1 \"pointSize\" 1 1 \"_max\" 1 1 4 \"time\" Int 1 1 AAAAAA== \"max_amount\" Int 1 1 AAAAAA== \"_width\" Int 1 1 AAAAAA== \"_height\" Int 1 1 AAAAAA=="
+  kernelSource "/*\n\nSimpleParticles.cpp\n\nBlinkScript that allows to emit particles along a bezier curve\nonly one segment (start, end, start handle, end handle) of a curve possible at the moment\n\ninputs: \n    format: sets the format\n    noise: a 2d noise map\nknobs:\n    p1,p1h,p2, p2h -> bezier points and handles, hidden in gizmo\n    start_frame, end_frame -> frame range\n    curr_frame -> for BlinkScript use only, to get the time. A \"frame\" expression must be set for this to work. Will be hidden on th gizmo\n    amount -> amount of particles emmited per frame\n    lifetime -> lifetime of particles\n    velocity, random_velocity -> velocity and random multiplier\n    color -> color of the particles\n    _mode -> 0 = cubicPoints, 1= circles\n    pointSize -> only available when _mode is 1\n    _max -> if true will merge particles per max, else plus\n\n\n    random functions are derived from Erwan Leroy\n    https://erwanleroy.com/making-3d-lightning-in-nuke-using-blinkscript/\n\n    The cubicPlot is derived from Mads Hagbarth PointRender, with a cubic twist.\n    https://higx.net/point_render/\n\n    The circlePlot is derived from Nukes ParticleBlinkScriptRender Example\n    \n*/\n\n// fract \ninline float fract(float x) \{return x-floor(x);\}\n\n// random \ninline float random(float co) \{ return fract(sin(co*(91.3458f)) * 47453.5453f); \}\n\n// random 2d vector\ninline float2 randomv(float2 seed)\n\{\n  float scramble = random(seed.x + seed.y);\n  float2 rand;\n  rand.x = random(seed.x + scramble + 0.14557f + 0.47917f)*2-1;\n  rand.y = random(seed.y * 0.214447f + scramble * 47.241f * seed.x)*2-1;\n  return normalize(rand);\n\}\n\n// get a point on the curve from t\ninline float2 getBezierPoint(const float t, const float2 P0, const float2 P1, const float2 P2, const float2 P3)\{\n    float2 ret;\n    ret.x = pow(1.0f-t, 3) * P0.x + 3.0f * pow(1-t, 2) * t * P1.x + 3.0f * (1-t) * pow(t, 2) * P2.x + pow(t, 3) * P3.x;\n    ret.y = pow(1.0f-t, 3) * P0.y + 3.0f * pow(1-t, 2) * t * P1.y + 3.0f * (1-t) * pow(t, 2) * P2.y + pow(t, 3) * P3.y;\n    return ret;\n\}\n\n// smoothstep for \"cubic\" filter\ninline float smoothstep( float a, float b, float x ) \{\n    float t = clamp((x - a) / (b - a), 0.0, 1.0);\n    return t*t * (3.0f - 2.0f*t);\n  \}\n  \n\nkernel SimpleParticles: ImageComputationKernel<ePixelWise>\n\{\n    Image<eRead> format; // set format\n    Image<eRead, eAccessRandom, eEdgeClamped> noise; // add noise\n    Image<eWrite, eAccessRandom> dst;\n    \n    param:\n        float2 p1;\n        float2 p1h;\n        float2 p2h;\n        float2 p2;\n        int start_frame;\n        int end_frame;\n        int curr_frame;\n        int amount;\n        int lifetime;\n        float velocity;\n        float random_velocity;\n        float4 color;\n        bool _mode;\n        float pointSize;\n        bool _max;\n\n    local:\n        int time;\n        int max_amount;\n        int _width;\n        int _height;\n\n    void define() \{\n        defineParam(p1, \"point1\", float2(10.0f, 10.0f));\n        defineParam(p1h, \"point1 handle\", float2(20.0f, 10.0f));\n        defineParam(p2h, \"point2 handle\", float2(30.0f, 10.0f));\n        defineParam(p2, \"point2\", float2(40.0f, 10.0f));\n        defineParam(start_frame, \"start frame\", 0);\n        defineParam(end_frame, \"end frame\", 100);\n        defineParam(curr_frame, \"current frame\", 0);\n        defineParam(amount, \"amount per frame\", 20);\n        defineParam(lifetime, \"lifetime\", 10);\n        defineParam(velocity, \"velocity\", 1.0f);\n        defineParam(random_velocity, \"random velocity\", 1.0f);\n        defineParam(color, \"color\", float4(1.0f));\n        defineParam(_mode, \"mode\", false);\n        defineParam(pointSize, \"Point Size\", 1.5f);\n        defineParam(_max, \"max\", false);\n    \}\n\n    void init() \{\n        time = max(curr_frame-start_frame, 0);\n        max_amount = (end_frame-start_frame) * amount;\n        _width = format.bounds.width();\n        _height = format.bounds.height();\n    \}\n\n    //Write pixels to output.\n    void draw(float posx,float posy,float weight=1.0f)\n    \{ \n        float4 outcolor; //This is used to store the final output\n        float4 inDst = (float4)dst(posx,posy); //Sample the destination image\n        if (_max)\{\n            // use max instead of plus\n            outcolor = max(inDst, (color * weight));\n        \}\n        else \{\n            // add pixels\n            outcolor = inDst + (color * weight);\n        \}\n        // write out \n        dst(posx,posy) = outcolor;\n    \}\n  \n    // Cubic filter\n    void cubicPlot(float2 temppos)\n    \{\n        float2 p;\n        p.x=temppos.x - floor(temppos.x);\n        p.y=temppos.y - floor(temppos.y);\n        float weights\[] = \{(1.0f-p.x)*(1.0f-p.y), p.x*(1.0f-p.y), (1.0f-p.x)*p.y, p.x*p.y\};\n        int2 _position = int2(floor(temppos.x)-0,floor(temppos.y)-0); \n        draw(_position.x,_position.y,smoothstep(0.0f,1.0f,weights\[0]));\n        draw(_position.x+1,_position.y,smoothstep(0.0f,1.0f,weights\[1]));\n        draw(_position.x,_position.y+1,smoothstep(0.0f,1.0f,weights\[2]));\n        draw(_position.x+1,_position.y+1,smoothstep(0.0f,1.0f,weights\[3]));\n    \}\n\n    // draw circles\n    void circlePlot( float2 xy)\n    \{\n        float sizeSquared = pointSize * pointSize;\n        float2 f = xy-floor(xy);\n        float2 g = float2(1.0f) - f;\n        xy = floor(xy);\n        int size = ceil(pointSize);\n        int minX = max(0, int(xy.x)-size);\n        int maxX = min(_width-1, int(xy.x)+size);\n        int minY = max(0, int(xy.y)-size);\n        int maxY = min(_height-1, int(xy.y)+size);\n        for ( int y = minY; y <= maxY; y++ ) \{\n        for ( int x = minX ; x <= maxX; x++ ) \{\n            float2 p = float2(x, y);\n            float2 d = p-xy;\n            float r2 = dot(d, d);\n            if ( r2 < sizeSquared ) \{\n            float w = 1.0f-smoothstep(0, sizeSquared, r2);\n            draw(p.x, p.y, w);\n            \}\n        \}\n        \}\n    \}\n    \n    void process(int2 pos) \{\n        if (pos.x || pos.y || time == 0 || curr_frame > end_frame + lifetime ) \{\n            return;\n        \}\n\n\n        float age; //particle age\n        float t; //t for bezier curve point\n        float2 p_pos; // particle postion\n        float2 direction; // random direction\n        float4 sample_noise; // sample noise input\n\n        float random_vel = clamp(random_velocity, 0.0f, 1.0f); // clamped random_velocity\n\n        // loop though all particles\n        for (int i=0; i< max_amount; i++) \{\n            float fi = float(i); // float index\n\n            age = time -(fi / float(amount)); // age \n            if (age< 0 || age > lifetime) \{ // particle is not active anymore\n                continue;\n            \}\n            t = fi/float(max_amount-1.0f); // get t for bezier curve (0 = start point, 1= end point) \n            direction = randomv(float2 (i, i+250)) * age * velocity * (random(float(i+500)) * random_vel + (1.0f - random_vel));// random direction\n            sample_noise = bilinear(noise, p_pos.x, p_pos.y)*(age/float(lifetime)); // noise sampled\n            p_pos = getBezierPoint(t, p1, p1h, p2h, p2) + direction + float2(sample_noise.x, sample_noise.y); // position from bezier curve, direction and sampled noise\n            if (format.bounds.inside(p_pos)) \{ // check if the pos values are within the format\n                if (_mode) \{\n                    // draw cubic points\n                    cubicPlot(p_pos);\n                \} else \{\n                    // draw circles\n                    circlePlot(p_pos);\n                \}\n            \}\n\n        \}\n    \}\n\n\};"
+  useGPUIfAvailable false
+  vectorize false
+  rebuild ""
+  SimpleParticles_point1 {{Roto1.curves.OpenSpline1.curve.0.main} {Roto1.curves.OpenSpline1.curve.0.main}}
+  "SimpleParticles_point1 handle" {{"Roto1.curves.OpenSpline1.curve.0.right + Roto1.curves.OpenSpline1.curve.0.main"} {"Roto1.curves.OpenSpline1.curve.0.right + Roto1.curves.OpenSpline1.curve.0.main"}}
+  "SimpleParticles_point2 handle" {{"Roto1.curves.OpenSpline1.curve.1.left + Roto1.curves.OpenSpline1.curve.1.main"} {"Roto1.curves.OpenSpline1.curve.1.left + Roto1.curves.OpenSpline1.curve.1.main"}}
+  SimpleParticles_point2 {{Roto1.curves.OpenSpline1.curve.1.main} {Roto1.curves.OpenSpline1.curve.1.main}}
+  "SimpleParticles_start frame" {{parent.start_frame}}
+  "SimpleParticles_end frame" {{parent.end_frame}}
+  "SimpleParticles_current frame" {{frame}}
+  "SimpleParticles_amount per frame" {{parent.amount}}
+  SimpleParticles_lifetime {{parent.liftetime}}
+  SimpleParticles_velocity {{parent.velocity}}
+  "SimpleParticles_random velocity" {{parent.random_velocity}}
+  SimpleParticles_color {{parent.color}}
+  SimpleParticles_mode {{parent.mode}}
+  "SimpleParticles_Point Size" {{parent.pointSize}}
+  SimpleParticles_max {{parent.mergeMode}}
+  rebuild_finalise ""
+  name BlinkScript1
+  selected true
+  xpos -249
+  ypos -345
+ }
+ Reformat {
+  format "1920 1080 0 0 1920 1080 1 HD_1080"
+  resize none
+  name Reformat1
+  xpos -249
+  ypos -309
+ }
+ Roto {
+  output none
+  cliptype none
+  curves {{{v x3f99999a}
+  {f 0}
+  {n
+   {layer Root
+    {f 2097664}
+    {t x44f00000 x44870000}
+    {a pt1x 0 pt1y 0 pt2x 0 pt2y 0 pt3x 0 pt3y 0 pt4x 0 pt4y 0 ptex00 0 ptex01 0 ptex02 0 ptex03 0 ptex10 0 ptex11 0 ptex12 0 ptex13 0 ptex20 0 ptex21 0 ptex22 0 ptex23 0 ptex30 0 ptex31 0 ptex32 0 ptex33 0 ptof1x 0 ptof1y 0 ptof2x 0 ptof2y 0 ptof3x 0 ptof3y 0 ptof4x 0 ptof4y 0 pterr 0 ptrefset 0 ptmot x40800000 ptref 0}
+    {curvegroup OpenSpline1 1049088 bezier
+     {{cc
+       {f 1056800}
+       {p
+        {xc22abb62 xc1cde400}
+        {{a osw 1 osf 0}     x43187750 x440991f5}
+        {x4417a22c x43b6dc16}
+        {xc3aac170 xc3fbf46c}
+        {{a osw 1 osf 0}     x44a8305c x44267a36}
+        {x41fba8c0 x4239aa60}}}
+      {cc
+       {f 1056800}
+       {p
+        {xc22abb62 xc1cde400}
+        {}
+        {x4417a22c x43b6dc16}
+        {xc3aac170 xc3fbf46c}
+        {}
+        {x41fba8c0 x4239aa60}}}}
+     {tx 1 x439e4000 x43d90000}
+     {a osbe 0 osee 0 osw 1 osf 0 str 1 tt x41200000}}}}}}
+  toolbox {selectAll {
+  { selectAll str 1 ssx 1 ssy 1 sf 1 }
+  { createBezier str 1 ssx 1 ssy 1 sf 1 sb 1 tt 4 }
+  { createBezierCusped str 1 ssx 1 ssy 1 sf 1 sb 1 }
+  { createBSpline str 1 ssx 1 ssy 1 sf 1 sb 1 }
+  { createEllipse str 1 ssx 1 ssy 1 sf 1 sb 1 }
+  { createRectangle str 1 ssx 1 ssy 1 sf 1 sb 1 }
+  { createRectangleCusped str 1 ssx 1 ssy 1 sf 1 sb 1 }
+  { createOpenSpline str 1 ssx 1 ssy 1 sf 1 tt 10 }
+  { brush str 1 ssx 1 ssy 1 sf 1 sb 1 }
+  { eraser src 2 str 1 ssx 1 ssy 1 sf 1 sb 1 }
+  { clone src 1 str 1 ssx 1 ssy 1 sf 1 sb 1 }
+  { reveal src 3 str 1 ssx 1 ssy 1 sf 1 sb 1 }
+  { dodge src 1 str 1 ssx 1 ssy 1 sf 1 sb 1 }
+  { burn src 1 str 1 ssx 1 ssy 1 sf 1 sb 1 }
+  { blur src 1 str 1 ssx 1 ssy 1 sf 1 sb 1 }
+  { sharpen src 1 str 1 ssx 1 ssy 1 sf 1 sb 1 }
+  { smear src 1 str 1 ssx 1 ssy 1 sf 1 sb 1 }
+} }
+  toolbar_brush_hardness 0.200000003
+  toolbar_openspline_width 1
+  toolbar_source_transform_scale {1 1}
+  toolbar_source_transform_center {320 240}
+  colorOverlay {0 0 0 0}
+  lifetime_type "all frames"
+  motionblur_shutter_offset_type centred
+  openspline_width 1
+  name Roto1
+  xpos -249
+  ypos -273
+ }
+ Output {
+  name Output1
+  xpos -249
+  ypos -225
+ }
+end_group

@@ -1,5 +1,33 @@
 # Samples
 
+## blinkScripts
+
+### SimpleParticles
+
+**description**
+A BlinkScript driven Node that emits particles along a bezier curve from an OpenSpline.
+
+**installation**
+Open or import SimpleParticles.nk file in Nuke.
+
+**usage**
+Pick the format and press "get spline".
+
+![image](src/img/sp01.PNG)
+
+The node properties of the Roto Node from inside the SimpleParticles Group opens and you can select the OpenSpline1.
+
+![image](src/img/sp02.PNG)
+
+**DO NOT DELETE THE OPENSPLINE OR CREATE ANOTHER SHAPE. DO NOT ADD OR DELETE POINTS FROM THE SPLINE. THE SCRIPT IS ONLY WORKING WITH ONE CURVE SECTION AT THE MINUTE (WIP)**
+
+Change the position of the points and the handles.
+
+![image](src/img/sp03.PNG)
+
+Change all other attributes to liking.
+
+
 ## python
 
 ### callbackKnobs
