@@ -1,6 +1,5 @@
 # Samples
 
-=======
 **Nuke:** 13
 
 **python:** 3 
