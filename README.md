@@ -1,5 +1,11 @@
 # Samples
 
+=======
+**Nuke:** 13
+
+**python:** 3 
+
+
 ## blinkScripts
 
 ### SimpleParticles
