@@ -1,5 +1,6 @@
 # Samples
 
+<<<<<<< HEAD
 ## blinkScripts
 
 ### SimpleParticles
@@ -27,6 +28,11 @@ Change the position of the points and the handles.
 
 Change all other attributes to liking.
 
+=======
+**Nuke:** 13
+
+**python:** 3 
+>>>>>>> 05ca4020f495b500825a550d79da8c0fdd9006cf
 
 ## python
 
@@ -84,7 +90,7 @@ Unpack both paintParticles.py and PaintParticles.gizmo into the .nuke folder and
 
 **usage**
 First, set the format, lifetime and intial size for your particles.
-![image](src/img/pp01.PNG)
+![image](src/img/pp01.png)
 
 Now, select the Add mode and the picker form the viewer toolbar.
 
