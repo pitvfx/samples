@@ -1,6 +1,5 @@
 # Samples
 
-<<<<<<< HEAD
 ## blinkScripts
 
 ### SimpleParticles
